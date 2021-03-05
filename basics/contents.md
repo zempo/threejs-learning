@@ -4,3 +4,4 @@
 2. **Lesson 2**: Webpack
 3. **Lesson 3**: Transform Objects and Groups
 4. **Lesson 4**: Animating Objects
+5. **Lesson 5**: Cameras
