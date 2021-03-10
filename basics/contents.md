@@ -9,3 +9,5 @@
 7. **Lesson 7**: Geometries
 8. **Lesson 8**: Debugging UI
 9. **Lesson 9**: Textures
+10. **Lesson 10**: Materials
+11. **Lesson 11**: 3D Text
