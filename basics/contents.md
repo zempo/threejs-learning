@@ -11,3 +11,14 @@
 9. **Lesson 9**: Textures
 10. **Lesson 10**: Materials
 11. **Lesson 11**: 3D Text
+
+## Useful Links From Unit
+
+**Portfolios**
+
+- [Wording/NormalMesh](https://www.ilithya.rocks/)
+
+**Libraries**
+
+- [PNG Textures Lib](https://github.com/nidorx/matcaps)
+- [Upload HDR img and make into environment texture](https://hdrihaven.com/)
