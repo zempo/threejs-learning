@@ -22,5 +22,5 @@
 7. **Lesson 7**: [Geometries](ex7/readme.md)
 8. **Lesson 8**: [Debugging UI](ex8/readme.md)
 9. **Lesson 9**: [Textures](ex9/readme.md)
-10. **Lesson 10** -> [Materials](ex10/readme.md)
-11. **Lesson 11** -> [3D Text](ex11/readme.md)
+10. **Lesson 10**: [Materials](ex10/readme.md)
+11. **Lesson 11**: [3D Text](ex11/readme.md)
