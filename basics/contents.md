@@ -10,6 +10,10 @@
 
 - [PNG Textures Lib](https://github.com/nidorx/matcaps)
 - [Upload HDR img and make into environment texture](https://hdrihaven.com/)
+- [Textures](https://www.poliigon.com/)
+- [João Paulo](https://ko-fi.com/katsukagi)
+- [More Textures](https://3dtextures.me/)
+- [Wooden Door](https://3dtextures.me/2019/04/16/door-wood-001/)
 
 ## Contents
 
