@@ -18,6 +18,13 @@ import * as dat from 'dat.gui'
 // Debug
 const gui = new dat.GUI()
 
+const controlNodes = {
+    color: 0xffffff,
+    wireframe: false,
+    roughness: .4,
+    metalness: .4
+}
+
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
 
