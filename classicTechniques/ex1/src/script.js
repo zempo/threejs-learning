@@ -8,7 +8,15 @@ import * as dat from 'dat.gui'
  * LIGHTING
  * =================
  * 
+ * Adding lights is as simple as adding a mesh
+ * You just need the correct classes and you add it to the scene.
  * 
+ * 
+ * AMBIANT LIGHT: provides omnidirectional lighting
+ * Simulates light being scattered and bounced around an object
+ * from the sun/light source
+ * 
+ * DIRECTIONAL LIGHT: Has a sun-like effect as if sun-rays were traveling in parrellel.
  * 
 */
 
@@ -20,9 +28,14 @@ const gui = new dat.GUI()
 
 const controlNodes = {
     color: 0xffffff,
+    ambColor: 0xffffff,
+    dirColor: 0x00fffc,
     wireframe: false,
     roughness: .4,
-    metalness: .4
+    metalness: .4,
+    ambIntensity: .5,
+    dirIntensity: .3,
+    pointIntensity: .5
 }
 
 // Canvas
@@ -34,21 +47,32 @@ const scene = new THREE.Scene()
 /**
  * Lights
  */
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
-scene.add(ambientLight)
+// Starter
+//--------------------------------------
+// const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
+// scene.add(ambientLight)
 
-const pointLight = new THREE.PointLight(0xffffff, 0.5)
-pointLight.position.x = 2
-pointLight.position.y = 3
-pointLight.position.z = 4
-scene.add(pointLight)
+// const pointLight = new THREE.PointLight(0xffffff, 0.5)
+// pointLight.position.x = 2
+// pointLight.position.y = 3
+// pointLight.position.z = 4
+// scene.add(pointLight)
+// ------------------------------------------
+const ambiantLight = new THREE.AmbientLight(controlNodes.ambColor, controlNodes.ambIntensity)
+scene.add(ambiantLight)
+
+const directionalLight = new THREE.DirectionalLight(controlNodes.dirColor, controlNodes.dirIntensity)
+scene.add(directionalLight)
 
 /**
  * Objects
  */
 // Material
-const material = new THREE.MeshStandardMaterial()
-material.roughness = 0.4
+const material = new THREE.MeshStandardMaterial({
+    roughness: .4,
+    color: controlNodes.color,
+    side: THREE.DoubleSide
+})
 
 // Objects
 const sphere = new THREE.Mesh(
@@ -75,7 +99,30 @@ const plane = new THREE.Mesh(
 plane.rotation.x = - Math.PI * 0.5
 plane.position.y = - 0.65
 
+
 scene.add(sphere, cube, torus, plane)
+
+let f1 = gui.addFolder('Adjust Light Intensity')
+f1.add(ambiantLight, "intensity").min(0).max(1).step(0.01).name("Ambiant Light Intensity");
+f1.add(directionalLight, "intensity").min(0).max(1).step(0.01).name("Directional Light Intensity");
+
+let f2 = gui.addFolder('Adjust Light Positions')
+f2.add(directionalLight.position, "y").min(-3).max(3).step(0.01).name("Directional Light Y");
+f2.add(directionalLight.position, "x").min(-3).max(3).step(0.01).name("Directional Light X");
+f2.add(directionalLight.position, "z").min(-3).max(3).step(0.01).name("Directional Light Z");
+
+let f3 = gui.addFolder('Adjust Colors')
+gui.addColor(controlNodes, "color").onChange(() => {
+    material.color.set(controlNodes.color);
+  });
+
+gui.addColor(controlNodes, "ambColor").onChange(() => {
+    ambiantLight.color.set(controlNodes.ambColor)
+})
+
+gui.addColor(controlNodes, "dirColor").onChange(() => {
+    directionalLight.color.set(controlNodes.dirColor)
+})
 
 /**
  * Sizes
