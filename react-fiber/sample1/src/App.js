@@ -1,7 +1,9 @@
 import { useRef } from 'react';
 import {Canvas, useFrame} from '@react-three/fiber'
-import {OrbitControls} from "@react-three/drei"
+import {OrbitControls, softShadows} from "@react-three/drei"
 import './scss/global.scss';
+
+softShadows()
 
 const cube1 = {
   color: 0xadd8e6,
@@ -13,7 +15,7 @@ const cube2 = {
   color: 0xff00ff,
   pos: [-2,1,-5],
   args: [1,1,1]
-}
+} 
 
 const cube3 = {
   color: 0xff00ff,
@@ -35,7 +37,7 @@ const SpinningGeo = (props) => {
   return (
 <>
     {/* OPTION 1 */}
-    <mesh ref={mesh1} position={pos} castShadow>
+    <mesh ref={mesh1} position={pos} castShadow receiveShadow>
     <boxBufferGeometry attach="geometry" args={args} />
     {/* <circleBufferGeometry attach="geometry" args={[1,200]} /> */}
     <meshStandardMaterial attach='material' color={color} />
@@ -56,9 +58,9 @@ const FloorGeo = props => {
 
   return (
     <>
-      <mesh receiveShadow rotation={rot} position={pos}>
+      <mesh rotation={rot} position={pos} receiveShadow>
         <planeBufferGeometry attach='geometry' args={args} />
-        <shadowMaterial attach='material' opacity={1} />
+        <shadowMaterial attach='material' opacity={.3} />
         {/* <meshStandardMaterial attach='material' color='yellow' /> */}
       </mesh>
     </>
@@ -71,16 +73,17 @@ function App() {
   return (
     <>
     {/* Our main canvas goes here */}
-    <Canvas colorManagement shadowMap camera={{position: [-5,2,10], fov: 60}}>
+    <Canvas colorManagement shadows="true" shadowMap camera={{position: [-5,2,10], fov: 60}}>
     <fog attach='fog' args={["white", 0, 40]} />
       <ambientLight intensity={.3} />
-      <directionalLight
+      <directionalLight 
        castShadow
        position={[0,10,0]}
        intensity={1.5}
-       shadow-mapSize-width={1024}
-       shadow-mapSize-height={1024}
-       shadow-camera-far={50}
+       shadow-mapSize-width={10024}
+       shadow-mapSize-height={10024}
+       shadow-camera-near={0.1}
+       shadow-camera-far={20}
        shadow-camera-left={-10}
        shadow-camera-right={10}
        shadow-camera-top={10}
