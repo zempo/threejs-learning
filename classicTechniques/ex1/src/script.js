@@ -30,11 +30,14 @@ const controlNodes = {
     color: 0xffffff,
     ambColor: 0xffffff,
     dirColor: 0x00fffc,
+    hemiSkyColor: 0x00fffc,
+    hemiGroundColor: 0x00fffc,
     wireframe: false,
     roughness: .4,
     metalness: .4,
     ambIntensity: .5,
     dirIntensity: .3,
+    hemiIntensity: .01,
     pointIntensity: .5
 }
 
@@ -58,11 +61,22 @@ const scene = new THREE.Scene()
 // pointLight.position.z = 4
 // scene.add(pointLight)
 // ------------------------------------------
+
+// comes from the surroundings
 const ambiantLight = new THREE.AmbientLight(controlNodes.ambColor, controlNodes.ambIntensity)
 scene.add(ambiantLight)
 
+// from a specific direction 
 const directionalLight = new THREE.DirectionalLight(controlNodes.dirColor, controlNodes.dirIntensity)
 scene.add(directionalLight)
+
+// different sky && ground colors, unlike ambiant light 
+const hemisphereLight = new THREE.HemisphereLight(
+    controlNodes.hemiSkyColor,
+    controlNodes.hemiGroundColor,
+    controlNodes.hemiIntensity
+    );
+scene.add(hemisphereLight);
 
 /**
  * Objects
@@ -105,6 +119,7 @@ scene.add(sphere, cube, torus, plane)
 let f1 = gui.addFolder('Adjust Light Intensity')
 f1.add(ambiantLight, "intensity").min(0).max(1).step(0.01).name("Ambiant Light Intensity");
 f1.add(directionalLight, "intensity").min(0).max(1).step(0.01).name("Directional Light Intensity");
+f1.add(hemisphereLight, "intensity").min(0).max(1).step(0.01).name("Hemispheric Light Intensity");
 
 let f2 = gui.addFolder('Adjust Light Positions')
 f2.add(directionalLight.position, "y").min(-3).max(3).step(0.01).name("Directional Light Y");
@@ -122,6 +137,14 @@ gui.addColor(controlNodes, "ambColor").onChange(() => {
 
 gui.addColor(controlNodes, "dirColor").onChange(() => {
     directionalLight.color.set(controlNodes.dirColor)
+})
+
+gui.addColor(controlNodes, "hemiSkyColor").onChange(() => {
+    hemisphereLight.color.set(controlNodes.hemiSkyColor)
+})
+
+gui.addColor(controlNodes, "hemiGroundColor").onChange(() => {
+    hemisphereLight.groundColor.set(controlNodes.hemiGroundColor)
 })
 
 /**
