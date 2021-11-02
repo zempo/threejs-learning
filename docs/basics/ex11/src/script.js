@@ -85,10 +85,7 @@ fontLoader.load("/fonts/helvetiker_regular.typeface.json", (font) => {
     bevelSegments: controlNodes.bevelSegments,
   };
 
-  const textGeometry = new THREE.TextBufferGeometry(
-    "Solomon Zelenko",
-    fontProps
-  );
+  const textGeometry = new THREE.TextBufferGeometry("Mmm Donuts", fontProps);
 
   // THE HARD WAY
   ////----------------
@@ -104,7 +101,6 @@ fontLoader.load("/fonts/helvetiker_regular.typeface.json", (font) => {
   const textMaterial = new THREE.MeshMatcapMaterial({
     color: controlNodes.color,
     matcap: matcapTexture,
-    // wireframe: controlNodes.wireframe
   });
 
   gui
@@ -114,7 +110,7 @@ fontLoader.load("/fonts/helvetiker_regular.typeface.json", (font) => {
     })
     .name("Update Text Color");
 
-  // gui.add(textMaterial, "wireframe").name("Toggle Wireframe")
+  gui.add(controlNodes, "wireframe").name("Toggle Wireframe");
 
   // -----------------
   // gui.add(controlNodes, "fontSize")
@@ -124,8 +120,18 @@ fontLoader.load("/fonts/helvetiker_regular.typeface.json", (font) => {
   // .onChange(() => {
 
   // })
-  // gui.add(textGeometry, "height").min(0).max(3).step(.0001).name("Line Height")
-  // gui.add(textGeometry, "curveSegments").min(0).max(25).step(1).name("Font Segments")
+  // gui
+  //   .add(textMaterial, "height")
+  //   .min(0)
+  //   .max(3)
+  //   .step(0.0001)
+  //   .name("Line Height");
+  gui
+    .add(controlNodes, "curveSegments")
+    .min(0)
+    .max(25)
+    .step(1)
+    .name("Font Segments");
   // gui.add(textGeometry, "bevelSize").min(0).max(3).step(.0001).name("Bevel Size")
   // gui.add(textGeometry, "bevelThickness").min(0).max(3).step(.0001).name("Bevel Thickness")
   // // gui.add(textGeometry, "bevelOffset").min(0).max(3).step(.0001).name("Bevel Offset")
@@ -148,7 +154,7 @@ fontLoader.load("/fonts/helvetiker_regular.typeface.json", (font) => {
     donut.rotation.y = (Math.random() - 0.5) * Math.PI;
     donut.rotation.x = (Math.random() - 0.5) * Math.PI;
 
-    const scale = Math.random();
+    const scale = Math.random() / 1.5;
 
     donut.scale.set(scale, scale, scale);
 
