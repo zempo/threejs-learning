@@ -2,6 +2,7 @@ import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import * as dat from "dat.gui";
+import { RectAreaLightHelper } from "three/examples/jsm/helpers/RectAreaLightHelper.js";
 
 /**
  * =================
@@ -17,6 +18,31 @@ import * as dat from "dat.gui";
  * from the sun/light source
  *
  * DIRECTIONAL LIGHT: Has a sun-like effect as if sun-rays were traveling in parrellel.
+ * from a specific direction
+ *
+ * HEMISPHERE LIGHT: A light source positioned directly above the scene, with color fading from the sky color to the ground color.
+ *
+ * POINT LIGHT: A light that gets emitted from a single point in all directions.
+ *  A common use case for this is to replicate the light emitted from a bare lightbulb.
+ *
+ * RECT AREA LIGHT: RectAreaLight emits light uniformly across the face a rectangular plane.
+ * This light type can be used to simulate light sources such as bright windows or strip lighting.
+ *
+ * SPOT LIGHT: This light gets emitted from a single point in one direction,
+ *  along a cone that increases in size the further from the light it gets.
+ *
+ * ---------------------------------
+ * Lights are EXPENSIVE
+ *
+ * Low cost lights: ambient/hemisphere (25-50)
+ * Moderate Light: directional, point (5-15)
+ * High cost lights: rect area, spot (2-3)
+ *
+ * -----------------------------
+ * BAKING LIGHT: bake light into texture, 3d software, cannot move the light around anymore (baked inside the textures)
+ *--------------------------------------------
+ * HELPERS: assist us positioning lights
+ *
  *
  */
 
@@ -88,6 +114,7 @@ const directionalLight = new THREE.DirectionalLight(
   controlNodes.dirColor,
   controlNodes.dirIntensity
 );
+
 scene.add(directionalLight);
 
 // different sky && ground colors, unlike ambiant light
@@ -137,6 +164,31 @@ const spotLight = new THREE.SpotLight(
 spotLight.position.set(0, 2, 3);
 scene.add(spotLight);
 
+// the target is a theoretical object, we have to add to the scene
+spotLight.target.position.x = -0.75;
+scene.add(spotLight.target);
+
+///====================================================================
+// ------------------------ helper(light, relative size of helper)
+const hemiLightHelper = new THREE.HemisphereLightHelper(hemisphereLight, 0.2);
+scene.add(hemiLightHelper);
+
+const dirLightHelper = new THREE.DirectionalLightHelper(directionalLight, 0.2);
+scene.add(dirLightHelper);
+
+const pointLightHelper = new THREE.PointLightHelper(pointLight, 0.2);
+scene.add(pointLightHelper);
+
+const spotLightHelper = new THREE.SpotLightHelper(spotLight);
+scene.add(spotLightHelper);
+window.requestAnimationFrame(() => {
+  spotLightHelper.update();
+  hemiLightHelper.update();
+});
+
+const rectLightHelper = new RectAreaLightHelper(rectAreaLight);
+scene.add(rectLightHelper);
+// ===========================================================================================
 /**
  * Objects
  */
@@ -160,7 +212,7 @@ const torus = new THREE.Mesh(
 );
 torus.position.x = 1.5;
 
-const plane = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), material);
+const plane = new THREE.Mesh(new THREE.PlaneGeometry(7, 7), material);
 plane.rotation.x = -Math.PI * 0.5;
 plane.position.y = -0.65;
 
@@ -261,7 +313,11 @@ f5.addColor(controlNodes, "rectAreaColor")
 
 //--------------------------------------
 let f6 = gui.addFolder("Spot Light");
-
+f6.add(spotLight, "intensity").min(0).max(1).step(0.01).name("Spot Intensity");
+f6.add(spotLight, "distance").min(0).max(10).step(0.01).name("Spot Distance");
+f6.add(spotLight, "angle").min(0).max(Math.PI).step(0.01).name("Spot Angle");
+f6.add(spotLight, "distance").min(0).max(10).step(0.01).name("Spot Distance");
+f6.add(spotLight, "penumbra").min(0).max(1).step(0.01).name("Spot Penumbra");
 f6.addColor(controlNodes, "spotColor")
   .onChange(() => {
     spotLight.color.set(controlNodes.spotColor);
