@@ -14,3 +14,4 @@
 ## Contents
 
 1. **Lesson 1**: [Lighting](ex1/readme.md)
+1. **Lesson 2**: [Shadows](ex2/readme.md)
