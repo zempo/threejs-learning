@@ -41,6 +41,13 @@ const TEXTURES = {
     metalness: textureLoader.load("/textures/door/metalness.jpg"),
     roughness: textureLoader.load("/textures/door/roughness.jpg"),
   },
+  roof: {
+    color: textureLoader.load("/textures/roof/color.jpg"),
+    ambiantOcclusion: textureLoader.load("/textures/roof/ambientOcclusion.jpg"),
+    height: textureLoader.load("/textures/roof/height.png"),
+    normal: textureLoader.load("/textures/roof/normal.jpg"),
+    roughness: textureLoader.load("/textures/roof/roughness.jpg"),
+  },
   walls: {
     color: textureLoader.load("/textures/bricks/color.jpg"),
     ambiantOcclusion: textureLoader.load(
@@ -49,6 +56,22 @@ const TEXTURES = {
     normal: textureLoader.load("/textures/bricks/normal.jpg"),
     roughness: textureLoader.load("/textures/bricks/roughness.jpg"),
   },
+  wallsDark: {
+    color: textureLoader.load("/textures/bricksDark/color.jpg"),
+    ambiantOcclusion: textureLoader.load(
+      "/textures/bricksDark/ambientOcclusion.jpg"
+    ),
+    height: textureLoader.load("/textures/bricksDark/height.png"),
+    normal: textureLoader.load("/textures/bricksDark/normal.jpg"),
+    roughness: textureLoader.load("/textures/bricksDark/roughness.jpg"),
+  },
+  wood: {
+    color: textureLoader.load("/textures/wood/color.jpg"),
+    ambiantOcclusion: textureLoader.load("/textures/wood/ambientOcclusion.jpg"),
+    height: textureLoader.load("/textures/wood/height.png"),
+    normal: textureLoader.load("/textures/wood/normal.jpg"),
+    roughness: textureLoader.load("/textures/wood/roughness.jpg"),
+  },
   grass: {
     color: textureLoader.load("/textures/grass/color.jpg"),
     ambiantOcclusion: textureLoader.load(
@@ -56,6 +79,15 @@ const TEXTURES = {
     ),
     normal: textureLoader.load("/textures/grass/normal.jpg"),
     roughness: textureLoader.load("/textures/grass/roughness.jpg"),
+  },
+  graves: {
+    color: textureLoader.load("/textures/graves/color.jpg"),
+    ambiantOcclusion: textureLoader.load(
+      "/textures/graves/ambientOcclusion.jpg"
+    ),
+    height: textureLoader.load("/textures/graves/height.png"),
+    normal: textureLoader.load("/textures/graves/normal.jpg"),
+    roughness: textureLoader.load("/textures/graves/roughness.jpg"),
   },
 };
 
@@ -77,8 +109,8 @@ const GEOS = {
   //   doorGeo: new THREE.PlaneGeometry(2, 2),
   doorGeo: new THREE.PlaneGeometry(2.2, 2.2, 100, 100),
   bushGeo: new THREE.SphereGeometry(1, 16, 16),
-  graveGeo: new THREE.BoxGeometry(0.6, 0.8, 0.2),
-  groundGeo: new THREE.PlaneGeometry(20, 20),
+  graveGeo: new THREE.BoxGeometry(0.6, 0.8, 0.15),
+  groundGeo: new THREE.PlaneGeometry(50, 50),
 };
 
 const MATS = {
@@ -90,8 +122,36 @@ const MATS = {
     roughnessMap: TEXTURES.walls.roughness,
     // side: THREE.DoubleSide,
   }),
+  houseMatDark: new THREE.MeshStandardMaterial({
+    // color: "#ac8e82",
+    map: TEXTURES.wallsDark.color,
+    aoMap: TEXTURES.wallsDark.ambiantOcclusion,
+    displacementMap: TEXTURES.wallsDark.height,
+    displacementScale: 0,
+    normalMap: TEXTURES.wallsDark.normal,
+    roughnessMap: TEXTURES.wallsDark.roughness,
+    roughness: 1,
+    metalness: 0,
+    // side: THREE.DoubleSide,
+  }),
+  houseMatWood: new THREE.MeshStandardMaterial({
+    // color: "#ac8e82",
+    map: TEXTURES.wood.color,
+    aoMap: TEXTURES.wood.ambiantOcclusion,
+    displacementMap: TEXTURES.wood.height,
+    displacementScale: 0,
+    normalMap: TEXTURES.wood.normal,
+    roughnessMap: TEXTURES.wood.roughness,
+    // side: THREE.DoubleSide,
+  }),
   roofMat: new THREE.MeshStandardMaterial({
-    color: "#b35f45",
+    // color: "#b35f45",
+    map: TEXTURES.roof.color,
+    aoMap: TEXTURES.roof.ambiantOcclusion,
+    displacementMap: TEXTURES.roof.height,
+    displacementScale: 0,
+    normalMap: TEXTURES.roof.normal,
+    roughnessMap: TEXTURES.roof.roughness,
   }),
   doorMat: new THREE.MeshStandardMaterial({
     //   color: "#aa7b7b"
@@ -110,7 +170,13 @@ const MATS = {
     color: "#89c854",
   }),
   graveMat: new THREE.MeshStandardMaterial({
-    color: "#b2b6b1",
+    // color: "#b2b6b1",
+    map: TEXTURES.graves.color,
+    aoMap: TEXTURES.graves.ambiantOcclusion,
+    displacementMap: TEXTURES.graves.height,
+    displacementScale: 0,
+    normalMap: TEXTURES.graves.normal,
+    roughnessMap: TEXTURES.graves.roughness,
   }),
   groundMat: new THREE.MeshStandardMaterial({
     map: TEXTURES.grass.color,
@@ -140,6 +206,22 @@ grassT.ambiantOcclusion.wrapT = THREE.RepeatWrapping;
 grassT.normal.wrapT = THREE.RepeatWrapping;
 grassT.roughness.wrapT = THREE.RepeatWrapping;
 
+const roofT = TEXTURES.roof;
+roofT.color.repeat.set(4, 4);
+roofT.ambiantOcclusion.repeat.set(4, 4);
+roofT.normal.repeat.set(4, 4);
+roofT.roughness.repeat.set(4, 4);
+// And don't forget to change the wrapS and wrapT properties to activate the repeat:
+roofT.color.wrapS = THREE.RepeatWrapping;
+roofT.ambiantOcclusion.wrapS = THREE.RepeatWrapping;
+roofT.normal.wrapS = THREE.RepeatWrapping;
+roofT.roughness.wrapS = THREE.RepeatWrapping;
+
+roofT.color.wrapT = THREE.RepeatWrapping;
+roofT.ambiantOcclusion.wrapT = THREE.RepeatWrapping;
+roofT.normal.wrapT = THREE.RepeatWrapping;
+roofT.roughness.wrapT = THREE.RepeatWrapping;
+
 /**
  * HOUSE GROUP
  * -------------------------
@@ -149,7 +231,7 @@ const house = new THREE.Group();
 scene.add(house);
 
 // Walls, move above floor
-const walls = new THREE.Mesh(GEOS.houseGeo, MATS.houseMat);
+const walls = new THREE.Mesh(GEOS.houseGeo, MATS.houseMatWood);
 walls.geometry.setAttribute(
   "uv2",
   new THREE.Float32BufferAttribute(walls.geometry.attributes.uv.array, 2)
@@ -163,6 +245,10 @@ const roof = new THREE.Mesh(GEOS.roofGeo, MATS.roofMat);
 roof.rotation.y = Math.PI * 0.25;
 // walls are 2.5 and we move objects up by half of their height
 roof.position.y = 2.5 + 0.5;
+roof.geometry.setAttribute(
+  "uv2",
+  new THREE.Float32BufferAttribute(roof.geometry.attributes.uv.array, 2)
+);
 house.add(roof);
 
 const door = new THREE.Mesh(GEOS.doorGeo, MATS.doorMat);
@@ -212,7 +298,7 @@ scene.add(graves);
 for (let i = 0; i < 50; i++) {
   // random angle, radius, x/z position
   const deg = Math.random() * Math.PI * 2;
-  const radius = 3 + Math.random() * 6;
+  const radius = 4.5 + Math.random() * 6;
   const xPos = Math.cos(deg) * radius;
   const zPos = Math.sin(deg) * radius;
 
@@ -256,12 +342,12 @@ scene.add(ghost3);
  * Lights
  */
 // Ambient light (dimmed for bluish color)
-const ambientLight = new THREE.AmbientLight("#b9d5ff", 0.12);
+const ambientLight = new THREE.AmbientLight("#b9d5ff", 0.35);
 gui.add(ambientLight, "intensity").min(0).max(1).step(0.001);
 scene.add(ambientLight);
 
 // Directional light (dimmed for a bluish color)
-const moonLight = new THREE.DirectionalLight("#b9d5ff", 0.12);
+const moonLight = new THREE.DirectionalLight("#b9d5ff", 0.35);
 moonLight.position.set(4, 5, -2);
 gui.add(moonLight, "intensity").min(0).max(1).step(0.001);
 gui.add(moonLight.position, "x").min(-5).max(5).step(0.001);
@@ -296,6 +382,8 @@ bush1.castShadow = true;
 bush2.castShadow = true;
 bush3.castShadow = true;
 bush4.castShadow = true;
+
+doorLight.receiveShadow = true;
 
 floor.receiveShadow = true;
 
