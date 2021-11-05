@@ -72,6 +72,13 @@ const TEXTURES = {
     normal: textureLoader.load("/textures/wood/normal.jpg"),
     roughness: textureLoader.load("/textures/wood/roughness.jpg"),
   },
+  moss: {
+    color: textureLoader.load("/textures/moss/color.jpg"),
+    ambiantOcclusion: textureLoader.load("/textures/moss/ambientOcclusion.jpg"),
+    height: textureLoader.load("/textures/moss/height.png"),
+    normal: textureLoader.load("/textures/moss/normal.jpg"),
+    roughness: textureLoader.load("/textures/moss/roughness.jpg"),
+  },
   grass: {
     color: textureLoader.load("/textures/grass/color.jpg"),
     ambiantOcclusion: textureLoader.load(
@@ -167,7 +174,13 @@ const MATS = {
     // side: THREE.DoubleSide,
   }),
   bushMat: new THREE.MeshStandardMaterial({
-    color: "#89c854",
+    // color: "#89c854",
+    map: TEXTURES.moss.color,
+    aoMap: TEXTURES.moss.ambiantOcclusion,
+    displacementMap: TEXTURES.moss.height,
+    displacementScale: 0,
+    normalMap: TEXTURES.moss.normal,
+    roughnessMap: TEXTURES.moss.roughness,
   }),
   graveMat: new THREE.MeshStandardMaterial({
     // color: "#b2b6b1",
@@ -183,6 +196,8 @@ const MATS = {
     aoMap: TEXTURES.grass.ambiantOcclusion,
     normalMap: TEXTURES.grass.normal,
     roughnessMap: TEXTURES.grass.roughness,
+    roughness: 1,
+    metalness: 0.1,
   }),
 };
 
@@ -310,6 +325,7 @@ for (let i = 0; i < 50; i++) {
   randGrave.rotation.y = (Math.random() - 0.5) * 0.4;
 
   randGrave.castShadow = true;
+  randGrave.receiveShadow = true;
 
   graves.add(randGrave);
 }
@@ -382,6 +398,10 @@ bush1.castShadow = true;
 bush2.castShadow = true;
 bush3.castShadow = true;
 bush4.castShadow = true;
+bush1.receiveShadow = true;
+bush2.receiveShadow = true;
+bush3.receiveShadow = true;
+bush4.receiveShadow = true;
 
 doorLight.receiveShadow = true;
 
