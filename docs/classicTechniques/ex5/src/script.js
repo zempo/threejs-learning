@@ -12,20 +12,38 @@ const gui = new dat.GUI();
 const PARAMS = {
   galaxy: {
     branches: 3,
-    count: 100000,
+    count: 200000,
     radius: 5,
-    randomness: 0.2,
-    randomnessPower: 3,
-    size: 0.01,
+    randomness: 0.3,
+    randomnessPower: 4,
+    size: 0.005,
     spin: 1,
+    insideColor: 0xff6030,
+    outsideColor: 0x1b3984,
+  },
+  space: {
+    background: "/textures/bkg.jpg",
   },
 };
+
+const loader = new THREE.TextureLoader();
+loader.setCrossOrigin("");
 
 // Canvas
 const canvas = document.querySelector("canvas.webgl");
 
 // Scene
 const scene = new THREE.Scene();
+let bgWidth, bgHeight;
+let bgTexture = loader.load(PARAMS.space.background, function (texture) {
+  let img = texture.image;
+  bgWidth = img.width;
+  bgHeight = img.height;
+  //   resize();
+});
+scene.background = bgTexture;
+bgTexture.wrapS = THREE.MirroredRepeatWrapping;
+bgTexture.wrapT = THREE.MirroredRepeatWrapping;
 
 /**
  * Test cube
@@ -45,8 +63,49 @@ const MATS = {
 
 let points = null;
 
+//==============================================================
+
+// GALAXY HELPERS
+// -------------
+const initializeGeo = () => {
+  GEOS.galaxy = new THREE.BufferGeometry();
+};
+
+const initializeMat = () => {
+  const { size } = PARAMS.galaxy;
+
+  MATS.galaxy = new THREE.PointsMaterial({
+    size,
+    sizeAttenuation: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    vertexColors: true,
+  });
+};
+
+/**
+ * GALAXY LAYOUT NOTES
+ * ------------------------
+ * We can use Math.cos(...) and Math.sin(...) to position the particles on those branches.
+ * -> We first calculate an angle with the modulo (%)
+ * -> Divide the result by the branches count parameter to get an angle between 0 and 1
+ * -> multiply this value by Math.PI * 2 to get an angle between 0 and a full circle.
+ *
+ * -> We then use that angle with Math.cos(...) and Math.sin(...) for the x and the z axis
+ * -> Then we finally multiply by the radius:
+ *
+ * Then we can multiply the spinAngle by that spin parameter.
+ * To put it differently, the further each particle is from the center, the more spin it'll endure:
+ *
+ *     Just spin, radius and branches
+ *   ------------
+ *  positions[i3] = Math.cos(branchAngle + spinAngle) * galaxyRadius;
+ *  positions[i3 + 1] = 0;
+ *  positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * galaxyRadius;
+ *
+ */
 const generateGalaxy = () => {
-  const { branches, count, radius, randomness, randomnessPower, size, spin } =
+  const { branches, count, radius, randomness, randomnessPower, spin } =
     PARAMS.galaxy;
 
   // Disposal
@@ -56,48 +115,69 @@ const generateGalaxy = () => {
     scene.remove(points);
   }
   //------------------------
-  // initial new geometries/material inside function (for debugging controls)
-  GEOS.galaxy = new THREE.BufferGeometry();
-  MATS.galaxy = new THREE.PointsMaterial({
-    size,
-    sizeAttenuation: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-  });
+  // initial new geometries/material inside function
+  initializeGeo();
 
   let positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+
+  const colorInside = new THREE.Color(PARAMS.galaxy.insideColor);
+  const colorOutside = new THREE.Color(PARAMS.galaxy.outsideColor);
 
   for (let i = 0; i < count; i++) {
     const i3 = i * 3;
-    /**
-     * We can use Math.cos(...) and Math.sin(...) to position the particles on those branches.
-     * -> We first calculate an angle with the modulo (%)
-     * -> Divide the result by the branches count parameter to get an angle between 0 and 1
-     * -> multiply this value by Math.PI * 2 to get an angle between 0 and a full circle.
-     *
-     * -> We then use that angle with Math.cos(...) and Math.sin(...) for the x and the z axis
-     * -> Then we finally multiply by the radius:
-     */
     const galaxyRadius = Math.random() * radius;
     const branchAngle = ((i % branches) / branches) * Math.PI * 2;
-    /**
-     * Then we can multiply the spinAngle by that spin parameter.
-     * To put it differently, the further each particle is from the center, the more spin it'll endure:
-     */
     const spinAngle = galaxyRadius * spin;
 
-    positions[i3] = Math.cos(branchAngle + spinAngle) * galaxyRadius;
-    positions[i3 + 1] = 0;
-    positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * galaxyRadius;
+    // Randomness and exponential spread
+    const randPos = {
+      //   x/y/z: (Math.random() - 0.5) * randomness * galaxyRadius,
+      x:
+        Math.pow(Math.random(), randomnessPower) *
+        (Math.random() < 0.5 ? 1 : -1) *
+        randomness *
+        galaxyRadius,
+      y:
+        Math.pow(Math.random(), randomnessPower) *
+        (Math.random() < 0.5 ? 1 : -1) *
+        randomness *
+        galaxyRadius,
+      z:
+        Math.pow(Math.random(), randomnessPower) *
+        (Math.random() < 0.5 ? 1 : -1) *
+        randomness *
+        galaxyRadius,
+    };
+
+    positions[i3] =
+      Math.cos(branchAngle + spinAngle) * galaxyRadius + randPos.x;
+    positions[i3 + 1] = randPos.y;
+    positions[i3 + 2] =
+      Math.sin(branchAngle + spinAngle) * galaxyRadius + randPos.z;
+
+    // Color
+    const mixedColor = colorInside.clone();
+    mixedColor.lerp(colorOutside, galaxyRadius / PARAMS.galaxy.radius);
+
+    colors[i3] = mixedColor.r;
+    colors[i3 + 1] = mixedColor.g;
+    colors[i3 + 2] = mixedColor.b;
   }
 
-  galaxy.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  GEOS.galaxy.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  GEOS.galaxy.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+  // initialize the material with the new colors
+  initializeMat();
 
   points = new THREE.Points(GEOS.galaxy, MATS.galaxy);
   scene.add(points);
 };
 
 generateGalaxy();
+
+// ===================================================
 
 let f1 = gui.addFolder("Star Traits");
 f1.add(PARAMS.galaxy, "count")
@@ -134,9 +214,15 @@ f3.add(PARAMS.galaxy, "randomness")
   .max(2)
   .step(0.001)
   .onFinishChange(generateGalaxy);
-// f3.add(PARAMS.galaxy, 'randomnessPower').min(0).max(2).step(.001).onFinishChange(generateGalaxy)
+f3.add(PARAMS.galaxy, "randomnessPower")
+  .min(1)
+  .max(10)
+  .step(0.001)
+  .onFinishChange(generateGalaxy);
 
 let f4 = gui.addFolder("Galaxy Colors");
+f4.addColor(PARAMS.galaxy, "insideColor").onFinishChange(generateGalaxy);
+f4.addColor(PARAMS.galaxy, "outsideColor").onFinishChange(generateGalaxy);
 
 /**
  * Sizes
@@ -150,6 +236,19 @@ window.addEventListener("resize", () => {
   // Update sizes
   sizes.width = window.innerWidth;
   sizes.height = window.innerHeight;
+
+  var aspect = window.innerWidth / window.innerHeight;
+  var texAspect = bgWidth / bgHeight;
+  var relAspect = aspect / texAspect;
+
+  bgTexture.repeat = new THREE.Vector2(
+    Math.max(relAspect, 1),
+    Math.max(1 / relAspect, 1)
+  );
+  bgTexture.offset = new THREE.Vector2(
+    -Math.max(relAspect - 1, 0) / 2,
+    -Math.max(1 / relAspect - 1, 0) / 2
+  );
 
   // Update camera
   camera.aspect = sizes.width / sizes.height;
