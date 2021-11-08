@@ -83,6 +83,7 @@ const initializeMat = () => {
   });
 };
 
+// NOTES
 /**
  * GALAXY LAYOUT NOTES
  * ------------------------
@@ -104,6 +105,8 @@ const initializeMat = () => {
  *  positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * galaxyRadius;
  *
  */
+let colorInside = new THREE.Color(PARAMS.galaxy.insideColor);
+let colorOutside = new THREE.Color(PARAMS.galaxy.outsideColor);
 const generateGalaxy = () => {
   const { branches, count, radius, randomness, randomnessPower, spin } =
     PARAMS.galaxy;
@@ -120,9 +123,6 @@ const generateGalaxy = () => {
 
   let positions = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
-
-  const colorInside = new THREE.Color(PARAMS.galaxy.insideColor);
-  const colorOutside = new THREE.Color(PARAMS.galaxy.outsideColor);
 
   for (let i = 0; i < count; i++) {
     const i3 = i * 3;
