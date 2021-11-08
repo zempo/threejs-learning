@@ -9,7 +9,7 @@ import * as dat from "dat.gui";
 // Debug
 const gui = new dat.GUI();
 const controlNode = {
-  patColor: 0xff88cc,
+  patColor: 0x87cfff,
 };
 
 // Canvas
@@ -46,7 +46,35 @@ const MATS = {
     size: 0.1,
     sizeAttenuation: true,
     color: controlNode.patColor,
-    map: TEXTURES.particle,
+    // Add in the particles texture
+    //-------------------------
+    // map: TEXTURES.particle,
+    //----------------------------------------
+    // If you look closely, you'll see that the front particles are hiding the back particles.
+    transparent: true,
+    alphaMap: TEXTURES.particle,
+    // That's better, but we can still randomly see some edges of the particles.
+    // so we need an alphatest so WebGL knows when not to render the pixel according to transparency
+    //-------------------------
+    // alphaTest: 0.001,
+    //-------------------------
+    // Well, that won't do...
+    //  WebGL tests if what's being drawn is closer than what's already drawn.
+    //  That is called depth testing and can be deactivated
+    // --------------------------
+    // depthTest = false
+    // ---------------------
+    // WebGL is testing if what's being drawn is closer than what's already drawn.
+    //  The depth of what's being drawn is stored in what we call a depth buffer.
+    // Instead of not testing if the particle is closer than what's in this depth buffer,
+    // we can tell the WebGL not to write particles in that depth buffer.'
+    //-------------------
+    depthWrite: false,
+    //--------------------
+    // we can tell the WebGL not only to draw the pixel,
+    //  but also to add the color of that pixel to the color of the pixel already drawn.
+    // That will have a saturation effect that can look amazing.
+    blending: THREE.AdditiveBlending,
   }),
 };
 
@@ -63,10 +91,12 @@ function makeParticles(x, s) {
   // particle spread
   let spread = s;
   let positions = new Float32Array(count);
+  let colors = new Float32Array(count);
 
   for (let i = 0; i < count; i++) {
     // btwn -.5 and .5
     positions[i] = (Math.random() - 0.5) * spread;
+    colors[i] = Math.random();
   }
 
   // create the three.js Buffer attribute and specify that each information is composed of 3 values
@@ -75,10 +105,16 @@ function makeParticles(x, s) {
     "position",
     new THREE.BufferAttribute(positions, 3)
   );
+
+  // colors also comprised of 3 values (red, green, blue)
+  GEOS.particles.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  // to activate vertex colors
+  MATS.p1.vertexColors = true;
 }
 
 // makeParticles(count, spread)
-makeParticles(5000, 20);
+const particleCount = 20000;
+makeParticles(particleCount, 8);
 
 const particles = new THREE.Points(GEOS.particles, MATS.p1);
 scene.add(particles);
@@ -136,9 +172,25 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
  */
 const clock = new THREE.Clock();
 
+// animate like a wave
+function animateParticles(time) {
+  const { position } = GEOS.particles.attributes;
+
+  for (let i = 0; i < particleCount; i++) {
+    let i3 = i * 3;
+
+    const x = position.array[i3];
+    // apply an offset to the sinus btwn particles to get wave shape
+    position.array[i3 + 1] = Math.sin(time + x);
+  }
+
+  position.needsUpdate = true;
+}
+
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
 
+  animateParticles(elapsedTime);
   // Update controls
   controls.update();
 
