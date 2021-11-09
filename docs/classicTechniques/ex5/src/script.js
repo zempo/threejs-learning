@@ -18,11 +18,14 @@ const PARAMS = {
     randomnessPower: 4,
     size: 0.005,
     spin: 1,
+    angleX: 0,
+    angleY: 0,
+    angleZ: 0,
     insideColor: 0xff6030,
     outsideColor: 0x1b3984,
   },
   space: {
-    background: "/textures/bkg.jpg",
+    background: "/textures/bg.jpg",
   },
 };
 
@@ -62,6 +65,7 @@ const MATS = {
 };
 
 let points = null;
+let pointsGroup = null;
 
 //==============================================================
 
@@ -69,6 +73,7 @@ let points = null;
 // -------------
 const initializeGeo = () => {
   GEOS.galaxy = new THREE.BufferGeometry();
+  pointsGroup = new THREE.Group();
 };
 
 const initializeMat = () => {
@@ -105,17 +110,24 @@ const initializeMat = () => {
  *  positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * galaxyRadius;
  *
  */
-let colorInside = new THREE.Color(PARAMS.galaxy.insideColor);
-let colorOutside = new THREE.Color(PARAMS.galaxy.outsideColor);
 const generateGalaxy = () => {
-  const { branches, count, radius, randomness, randomnessPower, spin } =
-    PARAMS.galaxy;
+  const {
+    branches,
+    count,
+    radius,
+    randomness,
+    randomnessPower,
+    spin,
+    angleX,
+    angleY,
+    angleZ,
+  } = PARAMS.galaxy;
 
   // Disposal
   if (points !== null) {
     GEOS.galaxy.dispose();
     MATS.galaxy.dispose();
-    scene.remove(points);
+    scene.remove(pointsGroup);
   }
   //------------------------
   // initial new geometries/material inside function
@@ -157,6 +169,9 @@ const generateGalaxy = () => {
       Math.sin(branchAngle + spinAngle) * galaxyRadius + randPos.z;
 
     // Color
+    let colorInside = new THREE.Color(PARAMS.galaxy.insideColor);
+    let colorOutside = new THREE.Color(PARAMS.galaxy.outsideColor);
+
     const mixedColor = colorInside.clone();
     mixedColor.lerp(colorOutside, galaxyRadius / PARAMS.galaxy.radius);
 
@@ -172,11 +187,16 @@ const generateGalaxy = () => {
   initializeMat();
 
   points = new THREE.Points(GEOS.galaxy, MATS.galaxy);
-  scene.add(points);
+  pointsGroup.add(points);
+  pointsGroup.rotation.set(
+    Math.PI * 0.5 * angleX,
+    Math.PI * 0.5 * angleY,
+    Math.PI * 0.5 * angleZ
+  );
+  scene.add(pointsGroup);
 };
 
 generateGalaxy();
-
 // ===================================================
 
 let f1 = gui.addFolder("Star Traits");
@@ -220,9 +240,29 @@ f3.add(PARAMS.galaxy, "randomnessPower")
   .step(0.001)
   .onFinishChange(generateGalaxy);
 
-let f4 = gui.addFolder("Galaxy Colors");
-f4.addColor(PARAMS.galaxy, "insideColor").onFinishChange(generateGalaxy);
-f4.addColor(PARAMS.galaxy, "outsideColor").onFinishChange(generateGalaxy);
+let f4 = gui.addFolder("Galaxy Orientation");
+f4.add(PARAMS.galaxy, "angleX")
+  .min(-2)
+  .max(2)
+  .step(0.001)
+  .name("Rotation X")
+  .onFinishChange(generateGalaxy);
+f4.add(PARAMS.galaxy, "angleY")
+  .min(-2)
+  .max(2)
+  .step(0.001)
+  .name("Rotation Y")
+  .onFinishChange(generateGalaxy);
+f4.add(PARAMS.galaxy, "angleZ")
+  .min(-2)
+  .max(2)
+  .step(0.001)
+  .name("Rotation Z")
+  .onFinishChange(generateGalaxy);
+
+let f5 = gui.addFolder("Galaxy Colors");
+f5.addColor(PARAMS.galaxy, "insideColor").onFinishChange(generateGalaxy);
+f5.addColor(PARAMS.galaxy, "outsideColor").onFinishChange(generateGalaxy);
 
 /**
  * Sizes
@@ -276,6 +316,7 @@ scene.add(camera);
 
 // Controls
 const controls = new OrbitControls(camera, canvas);
+controls.autoRotate = true;
 controls.enableDamping = true;
 
 /**
