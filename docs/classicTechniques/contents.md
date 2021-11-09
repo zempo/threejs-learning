@@ -19,4 +19,4 @@
 4. **Lesson 4**: [Particles](ex4/readme.md)
 5. **Lesson 5**: [Galaxy Generator](ex5/readme.md)
 6. **Lesson 6**: [Raycaster](ex6/readme.md)
-7. **Lesson 5**: [Scroll Based Animation](ex7/readme.md)
+7. **Lesson 7**: [Scroll Based Animation](ex7/readme.md)
