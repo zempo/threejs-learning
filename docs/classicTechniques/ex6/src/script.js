@@ -79,11 +79,11 @@ scene.add(object1, object2, object3);
 
  */
 const raycaster = new THREE.Raycaster();
-const rayOrigin = new THREE.Vector3(-3, -0, 0);
-const rayDirection = new THREE.Vector3(10, 0, 0);
-rayDirection.normalize();
+// const rayOrigin = new THREE.Vector3(-3, -0, 0);
+// const rayDirection = new THREE.Vector3(10, 0, 0);
+// rayDirection.normalize();
 
-raycaster.set(rayOrigin, rayDirection);
+// raycaster.set(rayOrigin, rayDirection);
 
 // intersection object
 /**
@@ -181,11 +181,11 @@ raycaster.set(rayOrigin, rayDirection);
 ]
  * 
 */
-const intersect = raycaster.intersectObject(object2);
-console.log(intersect);
+// const intersect = raycaster.intersectObject(object2);
+// console.log(intersect);
 
-const intersects = raycaster.intersectObjects([object1, object2, object3]);
-console.log(intersects);
+// const intersects = raycaster.intersectObjects([object1, object2, object3]);
+// console.log(intersects);
 
 /**
  * Sizes
@@ -240,6 +240,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
  */
 const clock = new THREE.Clock();
 
+// animate objects for a bit of zuszh
 function animateObjects(time) {
   // Animate objects
   object1.position.y = Math.sin(time * 0.3) * 1.5;
@@ -247,10 +248,105 @@ function animateObjects(time) {
   object3.position.y = Math.sin(time * 1.4) * 1.5;
 }
 
+// Cast a static ray and interact with meshes, this way
+function castRay() {
+  const rayOrigin = new THREE.Vector3(-3, 0, 0);
+  const rayDirection = new THREE.Vector3(1, 0, 0);
+  /**
+   * Yet again, we don't really need to normalize the rayDirection because its length is already 1.
+   *  But it's good practice to keep the normalize() in case we change the direction.
+   */
+  rayDirection.normalize();
+
+  raycaster.set(rayOrigin, rayDirection);
+
+  const objectsToTest = [object1, object2, object3];
+  const intersects = raycaster.intersectObjects(objectsToTest);
+  // console.log(intersects)
+
+  // turn objects back red at the beginning of each tick
+  for (const object of objectsToTest) {
+    object.material.color.set("#ff0000");
+  }
+
+  // mesh turns blue when it intersets
+  for (const intersect of intersects) {
+    intersect.object.material.color.set("#0000ff");
+  }
+}
+
+const mouse = new THREE.Vector2();
+window.addEventListener("mousemove", (event) => {
+  mouse.x = (event.clientX / sizes.width) * 2 - 1;
+  mouse.y = -(event.clientY / sizes.height) * 2 + 1;
+  // console.log(mouse)
+});
+
+// for mouse enter/leave events
+let currentIntersect = null;
+// cast a ray on hover, for better frame rate we want to pair with tick function
+// as opposed to hover events
+function castRayHover() {
+  // updates the ray with new origin and direction
+  raycaster.setFromCamera(mouse, camera);
+
+  const objectsToTest = [object1, object2, object3];
+  const intersects = raycaster.intersectObjects(objectsToTest);
+
+  for (const intersect of intersects) {
+    intersect.object.material.color.set("#0000ff");
+  }
+
+  for (const object of objectsToTest) {
+    if (!intersects.find((intersect) => intersect.object === object)) {
+      object.material.color.set("#ff0000");
+    }
+  }
+
+  castRayEnterLeave(intersects);
+}
+
+function castRayEnterLeave(intersects) {
+  if (intersects.length) {
+    if (!currentIntersect) {
+      console.log("mouse enter");
+    }
+
+    currentIntersect = intersects[0];
+  } else {
+    if (currentIntersect) {
+      console.log("mouse leave");
+    }
+
+    currentIntersect = null;
+  }
+}
+
+window.addEventListener("click", () => {
+  if (currentIntersect) {
+    switch (currentIntersect.object) {
+      case object1:
+        console.log("click on object 1");
+        break;
+
+      case object2:
+        console.log("click on object 2");
+        break;
+
+      case object3:
+        console.log("click on object 3");
+        break;
+    }
+  }
+});
+
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
 
   animateObjects(elapsedTime);
+  //   castRay();
+  castRayHover();
+
   // Update controls
   controls.update();
 
