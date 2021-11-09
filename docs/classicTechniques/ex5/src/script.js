@@ -21,11 +21,16 @@ const PARAMS = {
     angleX: 0,
     angleY: 0,
     angleZ: 0,
+    // 30ff91 1
+    // ffff30
     insideColor: 0xff6030,
+    // ff30e3 1
+    // 1b3984
     outsideColor: 0x1b3984,
   },
   space: {
     background: "/textures/bg.jpg",
+    rotation: 0.25,
   },
 };
 
@@ -317,7 +322,16 @@ scene.add(camera);
 // Controls
 const controls = new OrbitControls(camera, canvas);
 controls.autoRotate = true;
+controls.autoRotateSpeed = PARAMS.space.rotation;
 controls.enableDamping = true;
+f4.add(PARAMS.space, "rotation")
+  .min(-5)
+  .max(5)
+  .onFinishChange(function () {
+    controls.autoRotateSpeed = PARAMS.space.rotation;
+    controls.update();
+  })
+  .name("Galaxy Rotation");
 
 /**
  * Renderer
