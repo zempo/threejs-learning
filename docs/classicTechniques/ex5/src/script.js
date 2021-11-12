@@ -1,7 +1,10 @@
 import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import * as dat from "lil-gui";
+// lil-gui works with current node 17,
+// import * as dat from "lil-gui";
+// dat.gui is better, but only works with node 16
+import * as dat from "dat.gui";
 
 /**
  * Base
@@ -16,7 +19,7 @@ const PARAMS = {
     radius: 5,
     randomness: 0.3,
     randomnessPower: 4,
-    size: 0.005,
+    size: 0.0015,
     spin: 1,
     angleX: 0,
     angleY: 0,
