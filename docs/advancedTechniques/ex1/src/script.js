@@ -313,7 +313,7 @@ world.defaultContactMaterial = defaultContactMat;
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.22);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.24);
 directionalLight.castShadow = true;
 directionalLight.shadow.mapSize.set(1024, 1024);
 directionalLight.shadow.camera.far = 15;
