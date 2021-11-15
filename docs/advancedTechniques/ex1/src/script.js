@@ -151,7 +151,8 @@ const GEOS = {
 
 const MATS = {
   sphere: new THREE.MeshStandardMaterial({
-    metalness: 0.3,
+    color: 0xffffff,
+    metalness: 0.7,
     roughness: 0.4,
     envMap: environmentMapTexture,
     envMapIntensity: 0.5,
@@ -160,9 +161,21 @@ const MATS = {
 
 // As parameters of this function, we will only pass the radius and the position,
 // but feel free to add other parameters such as mass, material, subdivisions, etc.
+const objectsToUpdate = [];
+const matInstances = [];
 const createSphere = (radius, pos) => {
-  const mesh = new THREE.Mesh(GEOS.sphere, MATS.sphere);
+  const newMat = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    metalness: 0.4,
+    roughness: 0.4,
+    envMap: environmentMapTexture,
+    envMapIntensity: 0.5,
+  });
+  newMat.color.setHex(Math.random() * 0xffffff);
+  matInstances.push(newMat);
+  const mesh = new THREE.Mesh(GEOS.sphere, newMat);
   mesh.castShadow = true;
+  mesh.scale.set(radius, radius, radius);
   mesh.position.copy(pos);
   scene.add(mesh);
 
@@ -174,7 +187,21 @@ const createSphere = (radius, pos) => {
     material: defaultMat,
   });
   body.position.copy(pos);
+  objectsToUpdate.push({ mesh, body });
   world.addBody(body);
+};
+
+const reset = () => {
+  // console.log(objectsToUpdate);
+  let len = objectsToUpdate.length;
+  let i = 0;
+  for (const obj of objectsToUpdate) {
+    matInstances[i].dispose();
+    scene.remove(obj.mesh);
+    scene.remove(obj.body);
+    i++;
+  }
+  console.log(`Yeeted ${len} objects from scene.`);
 };
 
 // Now we need to have the ball stop on the floor
@@ -193,36 +220,28 @@ world.addBody(floorBody);
  * */
 floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(-1, 0, 0), Math.PI * 0.5);
 
-const f1 = gui.addFolder("Sphere Props");
+// const f1 = gui.addFolder("Sphere Props");
 
-f1.add(PARAMS, "mass").min(0).max(50).step(0.001).name("Sphere Mass");
-f1.addColor(PARAMS, "color").onChange(() => {
-  sphere.material.color.set(PARAMS.color);
-});
+// f1.add(PARAMS, "mass").min(0).max(50).step(0.001).name("Sphere Mass");
+// f1.addColor(PARAMS, "color").onChange(() => {
+//   sphere.material.color.set(PARAMS.color);
+// });
 
-const f2 = gui.addFolder("Scene Physics");
+const f1 = gui.addFolder("Scene Physics");
 
-f2.add(PARAMS, "gravX").min(-50).max(50).step(0.01).name("Grav X");
-f2.add(PARAMS, "gravY").min(-50).max(50).step(0.01).name("Grav Y");
-f2.add(PARAMS, "gravZ").min(-50).max(50).step(0.01).name("Grav Z");
-f2.add(PARAMS, "friction").min(0).max(1).step(0.01).name("Friction");
-f2.add(PARAMS, "restitution").min(0).max(1).step(0.01).name("Restitution");
+f1.add(PARAMS, "gravX").min(-50).max(50).step(0.01).name("Grav X");
+f1.add(PARAMS, "gravY").min(-50).max(50).step(0.01).name("Grav Y");
+f1.add(PARAMS, "gravZ").min(-50).max(50).step(0.01).name("Grav Z");
+f1.add(PARAMS, "friction").min(0).max(1).step(0.01).name("Friction");
+f1.add(PARAMS, "restitution").min(0).max(1).step(0.01).name("Restitution");
 
-const f3 = gui.addFolder("Scene Events");
-
-PARAMS.reset = () => {
-  // possible reset function?
-  console.log("reset");
-  //   sphere.position.x = 2;
-};
-
-f2.add(PARAMS, "reset");
+const f2 = gui.addFolder("Scene Events");
 
 /**
  * Floor
  */
 const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(10, 10),
+  new THREE.PlaneGeometry(100, 100),
   new THREE.MeshStandardMaterial({
     color: PARAMS.color,
     metalness: 0.3,
@@ -294,7 +313,7 @@ world.defaultContactMaterial = defaultContactMat;
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.22);
 directionalLight.castShadow = true;
 directionalLight.shadow.mapSize.set(1024, 1024);
 directionalLight.shadow.camera.far = 15;
@@ -375,7 +394,12 @@ const updatePhysics = (time) => {
   //     sphere.position.x = sphereBody.position.x
   //     sphere.position.y = sphereBody.position.y
   //     sphere.position.z = sphereBody.position.z
-  sphere.position.copy(sphereBody.position);
+  // sphere.position.copy(sphereBody.position);
+
+  // Spheres,
+  for (const obj of objectsToUpdate) {
+    obj.mesh.position.copy(obj.body.position);
+  }
 };
 
 // sphereBody.applyLocalForce(
@@ -389,12 +413,28 @@ const applyForce = () => {
 
 createSphere(0.5, { x: 0, y: 3, z: 0 });
 
+PARAMS.createSphere = () => {
+  createSphere(Math.random() * 0.5, {
+    x: (Math.random() - 0.5) * 3,
+    y: 3,
+    z: (Math.random() - 0.5) * 3,
+  });
+};
+
+PARAMS.reset = () => {
+  reset();
+};
+
+f2.add(PARAMS, "createSphere").name("Ball is life ⚽⚽");
+f2.add(PARAMS, "reset").name("Thanos Snap 👌");
+f2.open();
+
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
   const deltaTime = elapsedTime - oldElapsedTime;
   oldElapsedTime = elapsedTime;
 
-  //   updatePhysics(deltaTime);
+  updatePhysics(deltaTime);
   //   applyForce();
 
   // Update controls
