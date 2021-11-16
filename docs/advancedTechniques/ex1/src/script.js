@@ -163,6 +163,21 @@ const MATS = {
 // but feel free to add other parameters such as mass, material, subdivisions, etc.
 const objectsToUpdate = [];
 const matInstances = [];
+// sound
+// const hitSound = new Audio(`/sounds/fall.wav`);
+// const hitSound = new Audio("/sounds/hit.mp3");
+const hitSound = new Audio(`/sounds/fall2.wav`);
+
+const playHitSound = (collision) => {
+  const impactStrength = collision.contact.getImpactVelocityAlongNormal();
+
+  if (impactStrength > 1.5) {
+    hitSound.volume = Math.random();
+    hitSound.currentTime = 0;
+    hitSound.play();
+  }
+};
+
 const createSphere = (radius, pos) => {
   const newMat = new THREE.MeshStandardMaterial({
     color: 0xffffff,
@@ -187,6 +202,7 @@ const createSphere = (radius, pos) => {
     material: defaultMat,
   });
   body.position.copy(pos);
+  body.addEventListener("collide", playHitSound);
   objectsToUpdate.push({ mesh, body });
   world.addBody(body);
 };
@@ -196,9 +212,13 @@ const reset = () => {
   let len = objectsToUpdate.length;
   let i = 0;
   for (const obj of objectsToUpdate) {
+    // reset physics
+    obj.body.removeEventListener("collide", playHitSound);
+    world.remove(obj.body);
+
+    // dispose of objects
     matInstances[i].dispose();
     scene.remove(obj.mesh);
-    scene.remove(obj.body);
     i++;
   }
   console.log(`Yeeted ${len} objects from scene.`);
@@ -227,7 +247,7 @@ floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(-1, 0, 0), Math.PI * 0.5);
 //   sphere.material.color.set(PARAMS.color);
 // });
 
-const f1 = gui.addFolder("Scene Physics");
+const f1 = gui.addFolder("Scene Physics 🤠");
 
 f1.add(PARAMS, "gravX").min(-50).max(50).step(0.01).name("Grav X");
 f1.add(PARAMS, "gravY").min(-50).max(50).step(0.01).name("Grav Y");
@@ -235,7 +255,7 @@ f1.add(PARAMS, "gravZ").min(-50).max(50).step(0.01).name("Grav Z");
 f1.add(PARAMS, "friction").min(0).max(1).step(0.01).name("Friction");
 f1.add(PARAMS, "restitution").min(0).max(1).step(0.01).name("Restitution");
 
-const f2 = gui.addFolder("Scene Events");
+const f2 = gui.addFolder("Scene Events 🐣");
 
 /**
  * Floor
@@ -414,6 +434,16 @@ const applyForce = () => {
 createSphere(0.5, { x: 0, y: 3, z: 0 });
 
 PARAMS.createSphere = () => {
+  createSphere(Math.random() * 0.5, {
+    x: (Math.random() - 0.5) * 3,
+    y: 3,
+    z: (Math.random() - 0.5) * 3,
+  });
+  createSphere(Math.random() * 0.5, {
+    x: (Math.random() - 0.5) * 3,
+    y: 3,
+    z: (Math.random() - 0.5) * 3,
+  });
   createSphere(Math.random() * 0.5, {
     x: (Math.random() - 0.5) * 3,
     y: 3,
