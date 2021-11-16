@@ -13,7 +13,7 @@
 
 ## Contents
 
-1. **Lesson 1**: [Physics](ex1/readme.md)
+1. **Lesson 1**: [Physics && Sound](ex1/readme.md)
 2. **Lesson 2**: [Imported Models](ex2/readme.md)
 3. **Lesson 3**: [Custom Blender Models](ex3/readme.md)
 4. **Lesson 4**: [Realistic Render](ex4/readme.md)

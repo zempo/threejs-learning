@@ -147,6 +147,7 @@ world.gravity.set(PARAMS.gravX, PARAMS.gravY, PARAMS.gravZ);
 
 const GEOS = {
   sphere: new THREE.SphereGeometry(),
+  box: new THREE.BoxGeometry(1, 1, 1),
 };
 
 const MATS = {
@@ -154,6 +155,13 @@ const MATS = {
     color: 0xffffff,
     metalness: 0.7,
     roughness: 0.4,
+    envMap: environmentMapTexture,
+    envMapIntensity: 0.5,
+  }),
+  box: new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    metalness: 0.3,
+    roughness: 0.6,
     envMap: environmentMapTexture,
     envMapIntensity: 0.5,
   }),
@@ -165,17 +173,60 @@ const objectsToUpdate = [];
 const matInstances = [];
 // sound
 // const hitSound = new Audio(`/sounds/fall.wav`);
-// const hitSound = new Audio("/sounds/hit.mp3");
-const hitSound = new Audio(`/sounds/fall2.wav`);
+const ballSound = new Audio(`/sounds/fall2.wav`);
+const boxSound = new Audio("/sounds/hit.mp3");
 
-const playHitSound = (collision) => {
+const playBallSound = (collision) => {
   const impactStrength = collision.contact.getImpactVelocityAlongNormal();
 
   if (impactStrength > 1.5) {
-    hitSound.volume = Math.random();
-    hitSound.currentTime = 0;
-    hitSound.play();
+    ballSound.volume = Math.random();
+    ballSound.currentTime = 0;
+    ballSound.play();
   }
+};
+
+const playBoxSound = (collision) => {
+  const impactStrength = collision.contact.getImpactVelocityAlongNormal();
+
+  if (impactStrength > 1.5) {
+    boxSound.volume = Math.random();
+    boxSound.currentTime = 0;
+    boxSound.play();
+  }
+};
+
+const createBox = (width, height, depth, pos) => {
+  const newMat = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
+    metalness: 0.3,
+    roughness: 0.4,
+    envMap: environmentMapTexture,
+    envMapIntensity: 0.5,
+  });
+  newMat.color.setHex(Math.random() * 0xffffff);
+  matInstances.push(newMat);
+  const mesh = new THREE.Mesh(GEOS.box, newMat);
+  mesh.scale.set(width, height, depth);
+  mesh.castShadow = true;
+  mesh.position.copy(pos);
+  scene.add(mesh);
+
+  // cannon.js body
+  const shape = new CANNON.Box(
+    new CANNON.Vec3(width * 0.5, height * 0.5, depth * 0.5)
+  );
+
+  const body = new CANNON.Body({
+    mass: PARAMS.mass,
+    position: new CANNON.Vec3(0, 3, 0),
+    shape,
+    material: defaultMat,
+  });
+  body.position.copy(pos);
+  body.addEventListener("collide", playBoxSound);
+  objectsToUpdate.push({ mesh, body });
+  world.addBody(body);
 };
 
 const createSphere = (radius, pos) => {
@@ -202,7 +253,7 @@ const createSphere = (radius, pos) => {
     material: defaultMat,
   });
   body.position.copy(pos);
-  body.addEventListener("collide", playHitSound);
+  body.addEventListener("collide", playBallSound);
   objectsToUpdate.push({ mesh, body });
   world.addBody(body);
 };
@@ -213,7 +264,8 @@ const reset = () => {
   let i = 0;
   for (const obj of objectsToUpdate) {
     // reset physics
-    obj.body.removeEventListener("collide", playHitSound);
+    obj.body.removeEventListener("collide", playBallSound);
+    obj.body.removeEventListener("collide", playBoxSound);
     world.remove(obj.body);
 
     // dispose of objects
@@ -419,6 +471,7 @@ const updatePhysics = (time) => {
   // Spheres,
   for (const obj of objectsToUpdate) {
     obj.mesh.position.copy(obj.body.position);
+    obj.mesh.quaternion.copy(obj.body.quaternion);
   }
 };
 
@@ -439,12 +492,20 @@ PARAMS.createSphere = () => {
     y: 3,
     z: (Math.random() - 0.5) * 3,
   });
-  createSphere(Math.random() * 0.5, {
-    x: (Math.random() - 0.5) * 3,
-    y: 3,
-    z: (Math.random() - 0.5) * 3,
-  });
-  createSphere(Math.random() * 0.5, {
+  // createSphere(Math.random() * 0.5, {
+  //   x: (Math.random() - 0.5) * 3,
+  //   y: 3,
+  //   z: (Math.random() - 0.5) * 3,
+  // });
+  // createSphere(Math.random() * 0.5, {
+  //   x: (Math.random() - 0.5) * 3,
+  //   y: 3,
+  //   z: (Math.random() - 0.5) * 3,
+  // });
+};
+
+PARAMS.createBox = () => {
+  createBox(Math.random(), Math.random(), Math.random(), {
     x: (Math.random() - 0.5) * 3,
     y: 3,
     z: (Math.random() - 0.5) * 3,
@@ -456,6 +517,7 @@ PARAMS.reset = () => {
 };
 
 f2.add(PARAMS, "createSphere").name("Ball is life ⚽⚽");
+f2.add(PARAMS, "createBox").name(`Gift Box 🎁`);
 f2.add(PARAMS, "reset").name("Thanos Snap 👌");
 f2.open();
 
