@@ -6,6 +6,7 @@
 
 - [Three JS Editor](https://threejs.org/editor/)
   And because you can import models, it's a good way to test if your model is working fine. Though be careful; you can only test models composed of one file. You can try with the glTF-Binary or the glTF-Embedded duck.
+- [Blender Shortcuts](https://docs.google.com/document/d/1wZzJrEgNye2ZQqwe8oBh54AXwF5cYIe56EGFe2bb0QU/edit)
 
 **Libraries**
 
